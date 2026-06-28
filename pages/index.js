@@ -206,15 +206,20 @@ export default function Home() {
 
       // 3 — Generate
       setStep(3)
-      const genRes  = await fetch('/api/generate', {
+      setPollMsg('Hugging Face génère ta musique… (~30 secondes)')
+      const genRes = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: descData.analysis.prompt_mureka }),
       })
       const genData = await genRes.json()
       if (!genRes.ok) throw new Error(genData.error || 'Génération échouée')
-      setTaskId(genData.task_id)
-      startPolling(genData.task_id)
+
+      if (genData.audio_base64) {
+        const audioUrl = `data:audio/wav;base64,${genData.audio_base64}`
+        setSongs([{ url: audioUrl }])
+        setStep(4)
+      }
 
     } catch (e) {
       setError(e.message)
