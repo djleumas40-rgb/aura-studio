@@ -124,16 +124,16 @@ function SongCard({ song, index, mood }) {
 }
 
 export default function Home() {
-  const [mood, setMood]       = useState(DEFAULT_MOOD)
-  const [step, setStep]       = useState(0)
-  const [error, setError]     = useState('')
-  const [file, setFile]       = useState(null)
+  const [mood, setMood]         = useState(DEFAULT_MOOD)
+  const [step, setStep]         = useState(0)
+  const [error, setError]       = useState('')
+  const [file, setFile]         = useState(null)
   const [fileName, setFileName] = useState('')
   const [audioURL, setAudioURL] = useState(null)
   const [analysis, setAnalysis] = useState(null)
-  const [songs, setSongs]     = useState([])
-  const [isDrag, setIsDrag]   = useState(false)
-  const [pollMsg, setPollMsg] = useState('')
+  const [songs, setSongs]       = useState([])
+  const [isDrag, setIsDrag]     = useState(false)
+  const [pollMsg, setPollMsg]   = useState('')
   const fileRef = useRef(null)
 
   const c = MOODS[mood] || MOODS[DEFAULT_MOOD]
@@ -180,9 +180,9 @@ export default function Home() {
       setAnalysis(descData.analysis)
       setMood(descData.analysis?.mood || DEFAULT_MOOD)
 
-      // 3 — Récupère token HF
+      // 3 — Generate via proxy Vercel
       setStep(3)
-      setPollMsg('Connexion à Hugging Face…')
+      setPollMsg('MusicGen compose ta musique… (30-60 sec)')
       const genRes = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -191,30 +191,11 @@ export default function Home() {
       const genData = await genRes.json()
       if (!genRes.ok) throw new Error(genData.error || 'Génération échouée')
 
-      // 4 — Appel direct HF depuis le navigateur
-      setPollMsg('MusicGen compose ta musique… (30-60 secondes)')
-      const hfRes = await fetch(
-        'https://api-inference.huggingface.co/models/facebook/musicgen-small',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${genData.hf_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ inputs: genData.prompt }),
-        }
-      )
-
-      if (!hfRes.ok) {
-        const err = await hfRes.json().catch(() => ({}))
-        throw new Error(err.error || `Hugging Face erreur ${hfRes.status}`)
+      if (genData.audio_base64) {
+        const audioUrl = `data:audio/wav;base64,${genData.audio_base64}`
+        setSongs([{ url: audioUrl }])
+        setStep(4)
       }
-
-      setPollMsg('Finalisation…')
-      const blob = await hfRes.blob()
-      const audioUrl = URL.createObjectURL(blob)
-      setSongs([{ url: audioUrl }])
-      setStep(4)
 
     } catch (e) {
       setError(e.message)
