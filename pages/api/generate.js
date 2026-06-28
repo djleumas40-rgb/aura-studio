@@ -1,9 +1,9 @@
 export const config = {
   api: {
+    responseLimit: false,
     bodyParser: {
       sizeLimit: '10mb',
     },
-    responseLimit: false,
   },
   maxDuration: 60,
 }
@@ -31,6 +31,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           inputs: prompt,
         }),
+        signal: AbortSignal.timeout(55000),
       }
     )
 
@@ -38,22 +39,20 @@ export default async function handler(req, res) {
 
     if (!hfRes.ok) {
       const errorText = await hfRes.text()
-      throw new Error(errorText || 'Erreur Hugging Face')
+      throw new Error(errorText || `HF erreur ${hfRes.status}`)
     }
 
-    if (contentType.includes('audio')) {
-      const arrayBuffer = await hfRes.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+    const arrayBuffer = await hfRes.arrayBuffer()
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
 
-      res.setHeader('Content-Type', contentType)
-      res.setHeader('Content-Disposition', 'attachment; filename="generation.wav"')
-      return res.status(200).send(buffer)
-    }
-
-    const data = await hfRes.json()
-    return res.status(200).json(data)
+    return res.status(200).json({
+      audio_base64: base64,
+      mime_type: contentType || 'audio/wav',
+    })
   } catch (e) {
     console.error('Generate error:', e)
-    return res.status(500).json({ error: e.message })
+    return res.status(500).json({
+      error: e.message || 'Erreur génération',
+    })
   }
 }
