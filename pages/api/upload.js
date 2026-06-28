@@ -1,57 +1,19 @@
 export const config = {
-  api: { bodyParser: { sizeLimit: '70mb' } }
+  api: { bodyParser: { sizeLimit: '50mb' } }
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
-  }
 
   try {
-    const { filename, mimetype, data } = req.body
+    const { filename } = req.body
+    if (!filename) return res.status(400).json({ error: 'Aucun fichier reçu' })
 
-    if (!data) {
-      return res.status(400).json({ error: 'Aucun fichier reçu' })
-    }
-
-    const buffer = Buffer.from(data, 'base64')
-    const blob = new Blob([buffer], { type: mimetype || 'audio/mpeg' })
-
-    const fd = new FormData()
-    fd.append('file', blob, filename || 'audio.mp3')
-
-    const uploadRes = await fetch('https://api.mureka.ai/v1/files/upload', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.MUREKA_API_KEY}`,
-      },
-      body: fd,
-    })
-
-    const text = await uploadRes.text()
-
-    let uploadData
-    try {
-      uploadData = JSON.parse(text)
-    } catch {
-      uploadData = { raw: text }
-    }
-
-    if (!uploadRes.ok) {
-      throw new Error(
-        uploadData.error?.message ||
-        uploadData.message ||
-        text ||
-        'Upload Mureka échoué'
-      )
-    }
-
-    return res.status(200).json({
-      file_id: uploadData.id,
-      filename,
-    })
+    // On retourne un fake file_id basé sur le nom
+    // L'analyse se fera par Claude directement sans upload Mureka
+    res.status(200).json({ file_id: null, filename })
   } catch (e) {
-    console.error('Upload error:', e)
-    return res.status(500).json({ error: e.message })
+    res.status(500).json({ error: e.message })
   }
 }
