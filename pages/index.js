@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Head from 'next/head'
 
-// ── Mood colours ────────────────────────────────────────────────────────────
 const MOODS = {
   energetic:   { p: '#F97316', s: '#FCD34D', g: 'rgba(249,115,22,0.3)'  },
   melancholic: { p: '#6366F1', s: '#A5B4FC', g: 'rgba(99,102,241,0.3)'  },
@@ -12,7 +11,6 @@ const MOODS = {
 }
 const DEFAULT_MOOD = 'dark'
 
-// ── Waveform ────────────────────────────────────────────────────────────────
 function Waveform({ mood, active }) {
   const ref = useRef(null)
   const raf = useRef(null)
@@ -57,7 +55,6 @@ function Waveform({ mood, active }) {
   return <canvas ref={ref} width={800} height={110} style={{ width: '100%', height: 110, borderRadius: 12 }} />
 }
 
-// ── Step Badge ───────────────────────────────────────────────────────────────
 function Step({ n, label, active, done, color }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -67,8 +64,7 @@ function Step({ n, label, active, done, color }) {
         background: done ? color + 'CC' : active ? color + '33' : '#1A1A2E',
         border: `2px solid ${done || active ? color : '#2A2A40'}`,
         color: done ? '#fff' : active ? color : '#475569',
-        transition: 'all 0.3s',
-        flexShrink: 0,
+        transition: 'all 0.3s', flexShrink: 0,
       }}>
         {done ? '✓' : n}
       </div>
@@ -79,7 +75,6 @@ function Step({ n, label, active, done, color }) {
   )
 }
 
-// ── Song Card ────────────────────────────────────────────────────────────────
 function SongCard({ song, index, mood }) {
   const c = MOODS[mood] || MOODS[DEFAULT_MOOD]
   const audioRef = useRef(null)
@@ -91,20 +86,15 @@ function SongCard({ song, index, mood }) {
     else { audioRef.current.play(); setPlaying(true) }
   }
 
-  const url = song.url || song.audio_url || song.mp3_url || song.flac_url || ''
+  const url = song.url || ''
 
   return (
-    <div style={{
-      background: '#0D0D1A', borderRadius: 14, padding: 20,
-      border: `1px solid ${c.p}44`,
-      boxShadow: `0 4px 24px ${c.g}`,
-    }}>
+    <div style={{ background: '#0D0D1A', borderRadius: 14, padding: 20, border: `1px solid ${c.p}44`, boxShadow: `0 4px 24px ${c.g}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
         <button onClick={toggle} style={{
           width: 48, height: 48, borderRadius: '50%', border: 'none', cursor: 'pointer',
           background: `linear-gradient(135deg, ${c.p}, ${c.s})`,
-          fontSize: 18, flexShrink: 0,
-          boxShadow: `0 4px 16px ${c.g}`,
+          fontSize: 18, flexShrink: 0, boxShadow: `0 4px 16px ${c.g}`,
         }}>
           {playing ? '⏸' : '▶'}
         </button>
@@ -112,18 +102,11 @@ function SongCard({ song, index, mood }) {
           <p style={{ color: '#CBD5E1', fontWeight: 700, fontSize: 15, fontFamily: "'Space Grotesk', sans-serif" }}>
             Version {index + 1}
           </p>
-          <p style={{ color: '#475569', fontSize: 12 }}>Générée par Hugging Face</p>
+          <p style={{ color: '#475569', fontSize: 12 }}>Générée par Hugging Face · MusicGen</p>
         </div>
         {url && (
-          <a
-            href={url}
-            download={`aura-composition-${index + 1}.mp3`}
-            style={{
-              marginLeft: 'auto', padding: '8px 16px', borderRadius: 8,
-              background: c.p + '22', border: `1px solid ${c.p}55`,
-              color: c.s, fontSize: 13, fontWeight: 600, textDecoration: 'none',
-            }}
-          >
+          <a href={url} download={`aura-composition-${index + 1}.wav`}
+            style={{ marginLeft: 'auto', padding: '8px 16px', borderRadius: 8, background: c.p + '22', border: `1px solid ${c.p}55`, color: c.s, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
             ↓ Télécharger
           </a>
         )}
@@ -134,42 +117,36 @@ function SongCard({ song, index, mood }) {
           <audio controls src={url} style={{ width: '100%', height: 36, borderRadius: 8 }} />
         </>
       ) : (
-        <p style={{ color: '#475569', fontSize: 13 }}>URL audio non disponible</p>
+        <p style={{ color: '#475569', fontSize: 13 }}>Audio non disponible</p>
       )}
     </div>
   )
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [mood, setMood]           = useState(DEFAULT_MOOD)
-  const [step, setStep]           = useState(0) // 0=idle 1=uploading 2=analysing 3=generating 4=done
-  const [error, setError]         = useState('')
-  const [file, setFile]           = useState(null)
-  const [fileName, setFileName]   = useState('')
-  const [audioURL, setAudioURL]   = useState(null)
-  const [fileId, setFileId]       = useState(null)
-  const [analysis, setAnalysis]   = useState(null)
-  const [taskId, setTaskId]       = useState(null)
-  const [songs, setSongs]         = useState([])
-  const [isDrag, setIsDrag]       = useState(false)
-  const [pollMsg, setPollMsg]     = useState('')
+  const [mood, setMood]       = useState(DEFAULT_MOOD)
+  const [step, setStep]       = useState(0)
+  const [error, setError]     = useState('')
+  const [file, setFile]       = useState(null)
+  const [fileName, setFileName] = useState('')
+  const [audioURL, setAudioURL] = useState(null)
+  const [analysis, setAnalysis] = useState(null)
+  const [songs, setSongs]     = useState([])
+  const [isDrag, setIsDrag]   = useState(false)
+  const [pollMsg, setPollMsg] = useState('')
   const fileRef = useRef(null)
-  const pollRef = useRef(null)
 
   const c = MOODS[mood] || MOODS[DEFAULT_MOOD]
 
-  // ── File pick ──────────────────────────────────────────────────────────────
   const pickFile = useCallback((f) => {
     if (!f) return
     if (!f.type.startsWith('audio/')) { setError('Format invalide — MP3, WAV, M4A, OGG, FLAC acceptés'); return }
     setError(''); setFile(f); setFileName(f.name)
     if (audioURL) URL.revokeObjectURL(audioURL)
     setAudioURL(URL.createObjectURL(f))
-    setStep(0); setAnalysis(null); setSongs([]); setTaskId(null); setFileId(null)
+    setStep(0); setAnalysis(null); setSongs([])
   }, [audioURL])
 
-  // ── Full pipeline ──────────────────────────────────────────────────────────
   const run = async () => {
     if (!file) return
     setError(''); setSongs([]); setAnalysis(null)
@@ -190,11 +167,10 @@ export default function Home() {
       })
       const upData = await upRes.json()
       if (!upRes.ok) throw new Error(upData.error || 'Upload échoué')
-      setFileId(upData.file_id)
 
-      // 2 — Describe + Claude
+      // 2 — Analyse Claude
       setStep(2)
-      const descRes  = await fetch('/api/describe', {
+      const descRes = await fetch('/api/describe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_id: upData.file_id, filename: fileName }),
@@ -204,9 +180,9 @@ export default function Home() {
       setAnalysis(descData.analysis)
       setMood(descData.analysis?.mood || DEFAULT_MOOD)
 
-      // 3 — Generate
+      // 3 — Récupère token HF
       setStep(3)
-      setPollMsg('Hugging Face génère ta musique… (~30 secondes)')
+      setPollMsg('Connexion à Hugging Face…')
       const genRes = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -215,11 +191,30 @@ export default function Home() {
       const genData = await genRes.json()
       if (!genRes.ok) throw new Error(genData.error || 'Génération échouée')
 
-      if (genData.audio_base64) {
-        const audioUrl = `data:audio/wav;base64,${genData.audio_base64}`
-        setSongs([{ url: audioUrl }])
-        setStep(4)
+      // 4 — Appel direct HF depuis le navigateur
+      setPollMsg('MusicGen compose ta musique… (30-60 secondes)')
+      const hfRes = await fetch(
+        'https://api-inference.huggingface.co/models/facebook/musicgen-small',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${genData.hf_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ inputs: genData.prompt }),
+        }
+      )
+
+      if (!hfRes.ok) {
+        const err = await hfRes.json().catch(() => ({}))
+        throw new Error(err.error || `Hugging Face erreur ${hfRes.status}`)
       }
+
+      setPollMsg('Finalisation…')
+      const blob = await hfRes.blob()
+      const audioUrl = URL.createObjectURL(blob)
+      setSongs([{ url: audioUrl }])
+      setStep(4)
 
     } catch (e) {
       setError(e.message)
@@ -227,46 +222,11 @@ export default function Home() {
     }
   }
 
-  // ── Poll ───────────────────────────────────────────────────────────────────
-  const startPolling = (id) => {
-    let attempts = 0
-    const messages = [
-      'Mureka compose ta musique…',
-      'Génération des instruments…',
-      'Arrangement en cours…',
-      'Mixage et finalisation…',
-      'Presque prêt…',
-    ]
-    pollRef.current = setInterval(async () => {
-      attempts++
-      setPollMsg(messages[Math.min(Math.floor(attempts / 4), messages.length - 1)])
-      try {
-        const r = await fetch(`/api/query?task_id=${id}`)
-        const d = await r.json()
-        if (d.status === 'succeeded' && d.songs?.length > 0) {
-          clearInterval(pollRef.current)
-          setSongs(d.songs)
-          setStep(4)
-        } else if (d.status === 'failed') {
-          clearInterval(pollRef.current)
-          setError('Mureka n\'a pas pu générer la musique. Réessaie.')
-          setStep(0)
-        } else if (attempts > 60) {
-          clearInterval(pollRef.current)
-          setError('Timeout — la génération prend trop de temps. Réessaie.')
-          setStep(0)
-        }
-      } catch { /* continue polling */ }
-    }, 3000)
-  }
-
-  useEffect(() => () => clearInterval(pollRef.current), [])
-
   const busy = step > 0 && step < 4
   const stepLabels = [
     { label: 'Upload de ta musique', done: step > 1, active: step === 1 },
     { label: 'Analyse du style & mood', done: step > 2, active: step === 2 },
-    { label: 'Génération Mureka AI', done: step > 3, active: step === 3 },
+    { label: 'Génération Hugging Face', done: step > 3, active: step === 3 },
   ]
 
   return (
@@ -288,7 +248,6 @@ export default function Home() {
         ::-webkit-scrollbar { width:5px } ::-webkit-scrollbar-track { background:#0A0A15 } ::-webkit-scrollbar-thumb { background:#2A2A40; border-radius:3px }
       `}</style>
 
-      {/* Header */}
       <header style={{ padding: '28px 24px 20px', borderBottom: '1px solid #ffffff0D', background: 'linear-gradient(180deg,#0D0D1A,transparent)' }}>
         <div style={{ maxWidth: 780, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: `linear-gradient(135deg,${c.p},${c.s})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, transition: 'background .6s' }}>🎵</div>
@@ -303,16 +262,14 @@ export default function Home() {
 
       <main style={{ maxWidth: 780, margin: '0 auto', padding: '28px 24px 80px' }}>
 
-        {/* Visualizer */}
         <div style={{ background: '#0D0D1A', borderRadius: 16, padding: '18px 18px 10px', marginBottom: 20, border: `1px solid ${c.p}33`, boxShadow: `0 0 40px ${c.g}`, transition: 'border-color .6s,box-shadow .6s' }}>
           <Waveform mood={mood} active={busy} />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, padding: '0 2px' }}>
-            <span style={{ color: '#334155', fontSize: 12 }}>{file ? fileName : 'En attente d\'une piste audio'}</span>
+            <span style={{ color: '#334155', fontSize: 12 }}>{file ? fileName : "En attente d'une piste audio"}</span>
             <span style={{ color: c.s, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.1em' }}>{mood}</span>
           </div>
         </div>
 
-        {/* Steps (visible when busy or done) */}
         {step > 0 && (
           <div style={{ background: '#0A0A15', borderRadius: 14, padding: '16px 20px', marginBottom: 20, border: '1px solid #1A1A30', display: 'flex', flexDirection: 'column', gap: 10 }} className="fu">
             {stepLabels.map((s, i) => (
@@ -322,19 +279,12 @@ export default function Home() {
           </div>
         )}
 
-        {/* Drop zone */}
         <div
           onDragOver={e => { e.preventDefault(); setIsDrag(true) }}
           onDragLeave={() => setIsDrag(false)}
           onDrop={e => { e.preventDefault(); setIsDrag(false); pickFile(e.dataTransfer.files[0]) }}
           onClick={() => !busy && fileRef.current?.click()}
-          style={{
-            border: `2px dashed ${isDrag ? c.p : '#1E1E35'}`,
-            borderRadius: 16, padding: '32px 24px', textAlign: 'center',
-            cursor: busy ? 'not-allowed' : 'pointer',
-            background: isDrag ? c.p + '0F' : '#0A0A15',
-            transition: 'all .25s', marginBottom: 16,
-          }}
+          style={{ border: `2px dashed ${isDrag ? c.p : '#1E1E35'}`, borderRadius: 16, padding: '32px 24px', textAlign: 'center', cursor: busy ? 'not-allowed' : 'pointer', background: isDrag ? c.p + '0F' : '#0A0A15', transition: 'all .25s', marginBottom: 16 }}
         >
           <input ref={fileRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => pickFile(e.target.files[0])} />
           <div style={{ fontSize: 36, marginBottom: 10 }}>🎧</div>
@@ -344,7 +294,6 @@ export default function Home() {
           <p style={{ color: '#334155', fontSize: 13 }}>MP3 · WAV · M4A · OGG · FLAC · Glisser ou cliquer</p>
         </div>
 
-        {/* Audio preview */}
         {audioURL && (
           <div style={{ background: '#0D0D1A', borderRadius: 12, padding: '12px 16px', border: '1px solid #1A1A30', marginBottom: 16 }}>
             <p style={{ color: '#334155', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 8 }}>Référence</p>
@@ -352,35 +301,28 @@ export default function Home() {
           </div>
         )}
 
-        {/* Error */}
         {error && (
           <div style={{ padding: '12px 16px', borderRadius: 10, marginBottom: 16, background: '#EF444418', border: '1px solid #EF444444', color: '#FCA5A5', fontSize: 14 }}>
             ⚠️ {error}
           </div>
         )}
 
-        {/* CTA */}
-        <button
-          onClick={run}
-          disabled={!file || busy}
-          style={{
-            width: '100%', padding: 16, borderRadius: 14, border: 'none',
-            background: (!file || busy) ? '#111120' : `linear-gradient(135deg,${c.p},${c.s})`,
-            color: (!file || busy) ? '#2A2A45' : '#fff',
-            fontFamily: "'Space Grotesk',sans-serif", fontSize: 16, fontWeight: 700,
-            cursor: (!file || busy) ? 'not-allowed' : 'pointer',
-            boxShadow: (!file || busy) ? 'none' : `0 8px 32px ${c.g}`,
-            transition: 'all .3s', marginBottom: 24,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          }}
-        >
+        <button onClick={run} disabled={!file || busy} style={{
+          width: '100%', padding: 16, borderRadius: 14, border: 'none',
+          background: (!file || busy) ? '#111120' : `linear-gradient(135deg,${c.p},${c.s})`,
+          color: (!file || busy) ? '#2A2A45' : '#fff',
+          fontFamily: "'Space Grotesk',sans-serif", fontSize: 16, fontWeight: 700,
+          cursor: (!file || busy) ? 'not-allowed' : 'pointer',
+          boxShadow: (!file || busy) ? 'none' : `0 8px 32px ${c.g}`,
+          transition: 'all .3s', marginBottom: 24,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+        }}>
           {busy
             ? <><span style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid #ffffff30', borderTop: '2px solid #fff', animation: 'spin .8s linear infinite', display: 'inline-block' }} /> Génération en cours…</>
             : '🎼 Analyser & Créer une nouvelle musique'
           }
         </button>
 
-        {/* Analysis card */}
         {analysis && (
           <div className="fu" style={{ background: '#0D0D1A', borderRadius: 16, padding: 20, border: `1px solid ${c.p}33`, marginBottom: 20, boxShadow: `0 4px 24px ${c.g}` }}>
             <p style={{ color: '#334155', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>✨ Analyse de ta musique</p>
@@ -404,25 +346,23 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results */}
         {songs.length > 0 && (
           <div className="fu">
             <p style={{ color: '#334155', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>
-              🎉 {songs.length} composition{songs.length > 1 ? 's' : ''} générée{songs.length > 1 ? 's' : ''}
+              🎉 Composition générée !
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {songs.map((s, i) => <SongCard key={i} song={s} index={i} mood={mood} />)}
             </div>
             <button
               onClick={() => { setStep(0); setSongs([]); setAnalysis(null); setFile(null); setFileName(''); setAudioURL(null) }}
-              style={{ marginTop: 20, width: '100%', padding: 14, borderRadius: 12, border: `1px solid #1E1E35`, background: 'transparent', color: '#475569', fontSize: 14, cursor: 'pointer', fontWeight: 600 }}
+              style={{ marginTop: 20, width: '100%', padding: 14, borderRadius: 12, border: '1px solid #1E1E35', background: 'transparent', color: '#475569', fontSize: 14, cursor: 'pointer', fontWeight: 600 }}
             >
               ↩ Nouvelle création
             </button>
           </div>
         )}
 
-        {/* Empty state */}
         {step === 0 && !file && (
           <div style={{ textAlign: 'center', padding: '32px 0', color: '#1E1E35' }}>
             <div style={{ fontSize: 48, marginBottom: 12, opacity: .4 }}>🌌</div>
