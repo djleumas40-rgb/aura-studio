@@ -5,18 +5,27 @@ export default async function handler(req, res) {
   if (!task_id) return res.status(400).json({ error: 'task_id manquant' })
 
   try {
-    const queryRes = await fetch(`https://api.mureka.ai/v1/song/query/${task_id}`, {
-      headers: { Authorization: `Bearer ${process.env.MUREKA_API_KEY}` },
+    const queryRes = await fetch(`https://api.replicate.com/v1/predictions/${task_id}`, {
+      headers: { Authorization: `Bearer ${process.env.REPLICATE_API_KEY}` },
     })
 
     const data = await queryRes.json()
-    if (!queryRes.ok) throw new Error(data.error?.message || 'Query échouée')
+    if (!queryRes.ok) throw new Error(data.detail || 'Query échouée')
 
-    // Mureka returns songs array when done
-    const songs = data.songs || data.results || []
-    const status = data.status // 'preparing' | 'running' | 'succeeded' | 'failed'
+    // Replicate statuses: starting | processing | succeeded | failed | canceled
+    const status = data.status
+    const audioUrl = data.output // Replicate returns direct URL string for audio
 
-    res.status(200).json({ status, songs, raw: data })
+    if (status === 'succeeded' && audioUrl) {
+      res.status(200).json({
+        status: 'succeeded',
+        songs: [{ url: audioUrl }]
+      })
+    } else if (status === 'failed' || status === 'canceled') {
+      res.status(200).json({ status: 'failed', songs: [] })
+    } else {
+      res.status(200).json({ status, songs: [] })
+    }
   } catch (e) {
     console.error('Query error:', e)
     res.status(500).json({ error: e.message })
