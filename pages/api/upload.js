@@ -1,33 +1,45 @@
-export const config = {
-  api: { bodyParser: { sizeLimit: '50mb' } }
-}
+import formidable from 'formidable'
+import fs from 'fs'
+
+export const config = { api: { bodyParser: false } }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST')
-    return res.status(405).json({ error: 'Method not allowed' })
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  try {
-    const { filename, mimetype, data } = req.body
-    if (!data) return res.status(400).json({ error: 'Aucun fichier reçu' })
+  const form = formidable({ maxFileSize: 50 * 1024 * 1024 })
 
-    const buffer = Buffer.from(data, 'base64')
-    const blob = new Blob([buffer], { type: mimetype || 'audio/mpeg' })
-    const fd = new FormData()
-    fd.append('file', blob, filename || 'audio.mp3')
+  form.parse(req, async (err, fields, files) => {
+    if (err) return res.status(400).json({ error: 'Erreur lecture fichier: ' + err.message })
 
-    const uploadRes = await fetch('https://api.mureka.ai/v1/files/upload', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${process.env.MUREKA_API_KEY}` },
-      body: fd,
-    })
+    const file = Array.isArray(files.audio) ? files.audio[0] : files.audio
+    if (!file) return res.status(400).json({ error: 'Aucun fichier reçu' })
 
-    const uploadData = await uploadRes.json()
-    if (!uploadRes.ok)
-      throw new Error(uploadData.error?.message || 'Upload Mureka échoué')
+    try {
+      const fileBuffer = fs.readFileSync(file.filepath)
+      const fileName = file.originalFilename || 'audio.mp3'
+      const mimeType = file.mimetype || 'audio/mpeg'
 
-    res.status(200).json({ file_id: uploadData.id, filename })
-  } catch (e) {
-    console.error('Upload error:', e)
-    res.status(500).json({ error: e.message })
-  }
+      // Utilise le FormData natif de Node 18+ (dispo sur Vercel)
+      const blob = new Blob([fileBuffer], { type: mimeType })
+      const fd = new FormData()
+      fd.append('file', blob, fileName)
+      fd.append('purpose', 'song')
+
+      const uploadRes = await fetch('https://api.mureka.ai/v1/files/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.MUREKA_API_KEY}`,
+        },
+        body: fd,
+      })
+
+      const uploadData = await uploadRes.json()
+      if (!uploadRes.ok) throw new Error(uploadData.error?.message || 'Upload Mureka échoué')
+
+      res.status(200).json({ file_id: uploadData.id, filename: fileName })
+    } catch (e) {
+      console.error('Upload error:', e)
+      res.status(500).json({ error: e.message })
+    }
+  })
 }
