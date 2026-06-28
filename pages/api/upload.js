@@ -17,7 +17,6 @@ export default async function handler(req, res) {
       const blob = new Blob([fileBuffer], { type: mimeType })
       const fd = new FormData()
       fd.append('file', blob, fileName)
-      fd.append('purpose', 'song')
       const uploadRes = await fetch('https://api.mureka.ai/v1/files/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.MUREKA_API_KEY}` },
