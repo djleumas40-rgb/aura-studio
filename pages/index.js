@@ -112,7 +112,7 @@ function SongCard({ song, index, mood }) {
           <p style={{ color: '#CBD5E1', fontWeight: 700, fontSize: 15, fontFamily: "'Space Grotesk', sans-serif" }}>
             Version {index + 1}
           </p>
-          <p style={{ color: '#475569', fontSize: 12 }}>Générée par Mureka AI</p>
+          <p style={{ color: '#475569', fontSize: 12 }}>Générée par Hugging Face</p>
         </div>
         {url && (
           <a
@@ -296,7 +296,7 @@ export default function Home() {
             <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: '-.02em', background: `linear-gradient(135deg,${c.s},#fff)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', transition: 'background .6s' }}>
               AURA · Studio IA Musical
             </h1>
-            <p style={{ color: '#475569', fontSize: 12 }}>Propulsé par Mureka AI · Analyse par Claude</p>
+            <p style={{ color: '#475569', fontSize: 12 }}>Propulsé par Hugging Face · Analyse par Claude</p>
           </div>
         </div>
       </header>
